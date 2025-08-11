@@ -47,7 +47,7 @@ jobs:
         with:
           images: |
             ghcr.io/${{ github.repository }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
+            # ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
           tags: |
             # tag push 时
             type=match,pattern=^(.*-beta.*)$,group=1,enable=${{ startsWith(github.ref, 'refs/tags/v') && contains(github.ref_name, 'beta') }}
