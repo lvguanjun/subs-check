@@ -44,7 +44,7 @@ func CheckIPInfo(httpClient *http.Client) (bool, error) {
 	}
 
 	// Check if organization is Cloudflare
-	if ipInfo.Org == "AS13335 Cloudflare, Inc." {
+	if ipInfo.Org == "Cloudflare, Inc." {
 		return false, nil
 	}
 
