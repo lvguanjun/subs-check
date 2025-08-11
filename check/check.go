@@ -199,21 +199,22 @@ func (pc *ProxyChecker) checkProxy(proxy map[string]any) *Result {
 	}
 	defer httpClient.Close()
 
-	cloudflare, err := platform.CheckCloudflare(httpClient.Client)
-	if err != nil || !cloudflare {
-		slog.Info(fmt.Sprintf("检测到Cloudflare: %v", proxy["name"]))
+	// cloudflare, err := platform.CheckCloudflare(httpClient.Client)
+	// if err != nil || !cloudflare {
+	// 	slog.Info(fmt.Sprintf("检测到Cloudflare: %v", proxy["name"]))
+	// 	return nil
+	// }
+
+
+	google, err := platform.CheckGoogle(httpClient.Client)
+	if err != nil || !google {
+		slog.Info(fmt.Sprintf("检测到Google: %v", proxy["name"]))
 		return nil
 	}
 
 	ipinfo, err := platform.CheckIPInfo(httpClient.Client)
 	if err != nil || !ipinfo {
 		slog.Info(fmt.Sprintf("检测到IPInfo: %v", proxy["name"]))
-		return nil
-	}
-
-	google, err := platform.CheckGoogle(httpClient.Client)
-	if err != nil || !google {
-		slog.Info(fmt.Sprintf("检测到Google: %v", proxy["name"]))
 		return nil
 	}
 
