@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - 'v*.*.*'
+    branches:
+      - master
       
 permissions:
   contents: write
@@ -11,6 +13,7 @@ permissions:
 
 jobs:
   releaser:
+    if: startsWith(github.ref, 'refs/tags/v') # 仅 tag 时运行
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -37,7 +40,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
@@ -46,14 +49,15 @@ jobs:
             ghcr.io/${{ github.repository }}
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
           tags: |
-            # 如果 tag 包含 "beta"，只生成具体的版本标签
-            type=match,pattern=^(.*-beta.*)$,group=1,enable=${{ contains(github.ref_name, 'beta') }}
-            # 如果 tag 不包含 "beta"，生成版本标签
-            type=match,pattern=^v(.*)$,group=1,enable=${{ !contains(github.ref_name, 'beta') }}
+            # tag push 时
+            type=match,pattern=^(.*-beta.*)$,group=1,enable=${{ startsWith(github.ref, 'refs/tags/v') && contains(github.ref_name, 'beta') }}
+            type=match,pattern=^v(.*)$,group=1,enable=${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, 'beta') }}
+            # master push 时
+            type=raw,value=master,enable=${{ github.ref == 'refs/heads/master' }}
+            type=sha,enable=${{ github.ref == 'refs/heads/master' }}
           flavor: |
-            # 明确控制 latest 标签，只有当不包含 "beta" 时才生成
-            latest=${{ !contains(github.ref_name, 'beta') }}
-          
+            latest=${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, 'beta') || github.ref == 'refs/heads/master' }}
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         
@@ -68,6 +72,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Login to Docker Hub
+        if: startsWith(github.ref, 'refs/tags/v') # 仅 tag 时登录 Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}

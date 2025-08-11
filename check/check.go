@@ -194,18 +194,26 @@ func (pc *ProxyChecker) checkProxy(proxy map[string]any) *Result {
 
 	httpClient := CreateClient(proxy)
 	if httpClient == nil {
-		slog.Debug(fmt.Sprintf("创建代理Client失败: %v", proxy["name"]))
+		slog.Info(fmt.Sprintf("创建代理Client失败: %v", proxy["name"]))
 		return nil
 	}
 	defer httpClient.Close()
 
 	cloudflare, err := platform.CheckCloudflare(httpClient.Client)
 	if err != nil || !cloudflare {
+		slog.Info(fmt.Sprintf("检测到Cloudflare: %v", proxy["name"]))
+		return nil
+	}
+
+	ipinfo, err := platform.CheckIPInfo(httpClient.Client)
+	if err != nil || !ipinfo {
+		slog.Info(fmt.Sprintf("检测到IPInfo: %v", proxy["name"]))
 		return nil
 	}
 
 	google, err := platform.CheckGoogle(httpClient.Client)
 	if err != nil || !google {
+		slog.Info(fmt.Sprintf("检测到Google: %v", proxy["name"]))
 		return nil
 	}
 
@@ -213,6 +221,7 @@ func (pc *ProxyChecker) checkProxy(proxy map[string]any) *Result {
 	if config.GlobalConfig.SpeedTestUrl != "" {
 		speed, _, err = platform.CheckSpeed(httpClient.Client, Bucket)
 		if err != nil || speed < config.GlobalConfig.MinSpeed {
+			slog.Info(fmt.Sprintf("检测到SpeedTest: %v", proxy["name"]))
 			return nil
 		}
 	}

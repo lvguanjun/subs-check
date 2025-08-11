@@ -163,16 +163,15 @@ func GetIPLark(httpClient *http.Client) (loc string, ip string) {
 func GetMe(httpClient *http.Client) (loc string, ip string) {
 	type GeoIPData struct {
 		IP      string `json:"ip"`
-		Country string `json:"country_code"`
+		Country string `json:"countryCode"`
 	}
 
-	url := "https://ip.122911.xyz/api/ipinfo"
+	url := "https://3.0.3.0/ips"
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		slog.Debug(fmt.Sprintf("创建请求失败: %s", err))
 		return
 	}
-	req.Header.Set("User-Agent", "subs-check")
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		slog.Debug(fmt.Sprintf("me获取节点位置失败: %s", err))
